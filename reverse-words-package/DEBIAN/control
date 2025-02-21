@@ -1,0 +1,8 @@
+Package: reverse-words
+Version: 1.0
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: g++, make
+Maintainer: MariyaShmyga <mariyashmyga@gmail.com>
+Description: Программа на C++ для реверса порядка слов в строке.
