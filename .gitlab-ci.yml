@@ -1,0 +1,56 @@
+stages:
+  - build
+  - test
+  - package
+  - release
+
+# Этап сборки
+build:
+  stage: build
+  script:
+    - make  # Собираем программу
+  artifacts:
+    paths:
+      - reverse-words-package.deb  # Сохраняем собранный deb пакет как артефакт
+  only:
+    - main  # Работает только для ветки main
+
+# Этап тестирования
+test:
+  stage: test
+  script:
+    - ./test_script.sh  # Тестируем программу (здесь у тебя должен быть свой скрипт для тестов)
+  dependencies:
+    - build  # Этот этап зависит от сборки
+  only:
+    - main
+
+# Этап упаковки
+package:
+  stage: package
+  script:
+    - ./package_script.sh  # Скрипт для упаковки в .deb (если нужно что-то дополнительно паковать)
+  dependencies:
+    - test  # Этот этап зависит от тестов
+  only:
+    - main
+
+# Этап релиза
+release:
+  stage: release
+  script:
+    - echo "Создаем релиз с новым тегом"
+    - TAG="v1.0.$CI_PIPELINE_ID"
+    - git tag $TAG  # Создаём тег
+    - git push origin $TAG  # Запушиваем тег
+    - curl --request POST --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases" \
+        --form "name=Release $TAG" \
+        --form "tag_name=$TAG" \
+        --form "description=Автоматический релиз после успешного пайплайна" \
+        --form "assets[links][][name]=reverse-words-package.deb" \
+        --form "assets[links][][url]=${CI_PROJECT_URL}/-/jobs/${CI_JOB_ID}/artifacts/file/reverse-words-package.deb"
+  dependencies:
+    - package  # Этот этап зависит от упаковки
+  only:
+    - main  # Работает только для ветки main

@@ -1,3 +1,5 @@
 reverse_words
-reverse-words-package.deb
+*.o
+*.out
+*.log
 reverse-words-pacakage/usr/local/bin/reverse_words
